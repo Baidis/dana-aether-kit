@@ -1,0 +1,13 @@
+from datetime import date
+
+
+def assess_sentiment_today():
+    today = date.today().isoformat()
+    context = {"date": today, "topic": "BTC Bitcoin market sentiment news"}
+    summary = reason("Summarize today's BTC sentiment from news/social", context=context)
+    label = reason(
+        "Classify as strongly bullish / bullish / neutral / bearish / strongly bearish",
+        context=summary,
+    )
+    conf = reason("Confidence score 0.0-1.0", context=summary)
+    return {"date": today, "sentiment": label, "confidence": conf, "summary": summary}

@@ -1,0 +1,15 @@
+# crypto_signal_pipeline - Multi-agent signal generation
+
+from agents.sentiment import get_sentiment
+from agents.risk_assessor import assess_risk
+
+def generate_signal():
+    sentiment = get_sentiment()
+    risk = assess_risk()
+    
+    if sentiment == "bullish" and risk < 0.5:
+        return "BUY"
+    elif sentiment == "bearish" or risk > 0.7:
+        return "SELL"
+    else:
+        return "HOLD"

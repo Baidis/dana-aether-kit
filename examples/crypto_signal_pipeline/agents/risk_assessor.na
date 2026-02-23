@@ -1,0 +1,13 @@
+from datetime import date
+
+def assess_risk():
+    today = date.today().isoformat()
+    volatility = reason("Assess current BTC volatility level (0.0-1.0)")
+    regulatory = reason("Check for regulatory news risks")
+    market_structure = reason("Analyze on-chain risk indicators")
+    combined = reason("Calculate overall risk score 0.0-1.0", context={
+        "volatility": volatility,
+        "regulatory": regulatory,
+        "market_structure": market_structure
+    })
+    return combined

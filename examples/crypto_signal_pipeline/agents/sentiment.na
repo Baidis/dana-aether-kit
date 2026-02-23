@@ -1,0 +1,7 @@
+from datetime import date
+
+def get_sentiment():
+    today = date.today().isoformat()
+    news = reason(f"Summarize BTC news for {today}")
+    social = reason("Analyze social media sentiment for BTC")
+    return reason("Classify as bullish/neutral/bearish", context={"news": news, "social": social})
