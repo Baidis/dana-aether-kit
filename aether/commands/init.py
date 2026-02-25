@@ -1,8 +1,13 @@
 """Initialize command - scaffold a new Dana project."""
 
-import typer
+import shutil
 from pathlib import Path
 from typing import List
+
+import typer
+
+# Directory containing the shipped templates (sibling of this package)
+_TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 
 DEFAULT_TEAM = [
     "Grok (lead)",
@@ -11,73 +16,67 @@ DEFAULT_TEAM = [
     "Lucas (workflows)",
 ]
 
-PROJECT_TEMPLATE = """project "{name}" {{
-  team: {team}
-  goals: "Build reliable trading / e-commerce agents"
-}}
-"""
 
-AGENT_TEMPLATE = """# agents/{name_lower}.na
-# Example: Domain-aware agent for crypto trading
+def _apply_placeholders(text: str, project_name: str, agent_name: str) -> str:
+    return (
+        text.replace("{{project_name}}", project_name)
+        .replace("{{agent_name}}", agent_name)
+    )
 
 
-def analyze_{name_lower}(symbol: str):
-    return reason("Analyze market trends for the given symbol")
-
-
-def pipeline_example_{name_lower}(input_data):
-    return reason("Process input data")
-"""
+def _slug(name: str) -> str:
+    """Convert a human name to a snake_case slug."""
+    return name.strip().lower().replace(" ", "_").replace("-", "_")
 
 
 def init(
     name: str,
     team: List[str] = typer.Option(DEFAULT_TEAM, "--team", help="Team members"),
-    with_env: bool = typer.Option(False, "--env", help="Create .env.example file"),
+    with_env: bool = typer.Option(False, "--env", help="Copy .env.example"),
 ):
-    """Initialize a new Dana project"""
+    """Initialize a new Dana project from templates"""
     project_dir = Path(name)
     project_dir.mkdir(exist_ok=True)
 
-    team_str = "[\n    " + ",\n    ".join(f'"{m}"' for m in team) + "\n  ]"
-    (project_dir / "project.dana").write_text(
-        PROJECT_TEMPLATE.format(name=name, team=team_str)
-    )
+    agent_name = _slug(name)
+    project_name = name
 
-    for folder in ["agents", "intents", "workflows"]:
+    # ------------------------------------------------------------------
+    # Directories
+    # ------------------------------------------------------------------
+    for folder in ("agents", "intents", "workflows"):
         (project_dir / folder).mkdir(exist_ok=True)
 
-    lower_name = name.replace(" ", "_").lower()
-    (project_dir / "agents" / f"{lower_name}.na").write_text(
-        AGENT_TEMPLATE.format(name=name.replace(" ", ""), name_lower=lower_name)
-    )
+    # ------------------------------------------------------------------
+    # project.dana — copy template, substitute placeholders
+    # ------------------------------------------------------------------
+    src_project = _TEMPLATES_DIR / "project.dana"
+    dst_project = project_dir / "project.dana"
+    raw = src_project.read_text()
+    dst_project.write_text(_apply_placeholders(raw, project_name, agent_name))
 
+    # ------------------------------------------------------------------
+    # agents/<slug>.na — copy example.na template
+    # ------------------------------------------------------------------
+    src_agent = _TEMPLATES_DIR / "agents" / "example.na"
+    dst_agent = project_dir / "agents" / f"{agent_name}.na"
+    raw = src_agent.read_text()
+    dst_agent.write_text(_apply_placeholders(raw, project_name, agent_name))
+
+    # ------------------------------------------------------------------
+    # .aether/ — roles config
+    # ------------------------------------------------------------------
+    aether_dir = project_dir / ".aether"
+    aether_dir.mkdir(exist_ok=True)
+    shutil.copy2(_TEMPLATES_DIR / ".aether" / "roles.json", aether_dir / "roles.json")
+
+    # ------------------------------------------------------------------
+    # .env.example (optional)
+    # ------------------------------------------------------------------
     if with_env:
-        env_example = Path(project_dir) / ".env.example"
-        env_example.write_text("""# Dana API Keys - copy to .env and fill in
-# Get keys from provider websites
-
-# OpenRouter (recommended - cheap, many models)
-# Get from: https://openrouter.ai/keys
-OPENROUTER_API_KEY=
-
-# OpenAI (optional)
-# Get from: https://platform.openai.com/api-keys
-OPENAI_API_KEY=
-
-# Anthropic (optional)
-# Get from: https://console.anthropic.com/settings/keys
-ANTHROPIC_API_KEY=
-
-# Groq (optional - fast free tier)
-# Get from: https://console.groq.com/keys
-GROQ_API_KEY=
-
-# Google (optional)
-# Get from: https://aistudio.google.com/app/apikey
-GOOGLE_API_KEY=
-""")
+        src_env = _TEMPLATES_DIR / ".env.example"
+        shutil.copy2(src_env, project_dir / ".env.example")
         typer.echo("✓ Created .env.example")
 
-    typer.echo(f"Project '{name}' initialized! cd {name} && aether run project.dana")
-    typer.echo("Or use: dana agents/" + f"{lower_name}.na")
+    typer.echo(f"✓ Project '{name}' initialized in {project_dir}/")
+    typer.echo(f"  cd {name} && aether run")

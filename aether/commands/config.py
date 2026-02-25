@@ -89,7 +89,7 @@ def config(
                     f.write(f"{info['env']}={api_key}\n")
                 typer.echo(f"✓ Created .env with {info['env']}")
 
-            typer.echo(f"\nRun Dana with: aether run <file.na>")
+            typer.echo("\nRun Dana with: aether run <file.na>")
         else:
             typer.echo(f"\n=== Configure {provider} ===")
             typer.echo(f"Get key from: {info['url']}")

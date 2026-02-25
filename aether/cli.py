@@ -2,7 +2,7 @@
 
 import typer
 
-from aether.commands import init, coordinate, config, run
+from aether.commands import init, coordinate, config, run, agent, lock
 
 app = typer.Typer(
     name="aether",
@@ -14,6 +14,10 @@ app.command()(init.init)
 app.command()(coordinate.coordinate)
 app.command()(config.config)
 app.command()(run.run)
+app.command()(agent.agent)
+app.command(name="lock")(lock.lock)
+app.command(name="unlock")(lock.unlock)
+app.command(name="locks")(lock.locks)
 
 
 if __name__ == "__main__":
