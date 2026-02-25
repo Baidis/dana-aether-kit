@@ -1,0 +1,15 @@
+# research_agent — summarise any topic and save to markdown
+#
+# Usage:
+#   cd examples/research_agent
+#   aether run project.dana
+
+from agents.researcher import research_topic
+
+if __name__ == "__main__":
+    result = research_topic(
+        topic="Dana agent-native programming language",
+        output_file="dana_research.md",
+    )
+    print(f"✓ Saved to {result['output_file']}")
+    print(f"\nSummary:\n{result['summary']}")

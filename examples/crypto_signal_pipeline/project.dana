@@ -1,15 +1,23 @@
-# crypto_signal_pipeline - Multi-agent signal generation
+# crypto_signal_pipeline — three-agent chained signal generation
+#
+# Pipeline:
+#   sentiment  ──┐
+#                ├──► signal_generator ──► final BUY/SELL/HOLD
+#   risk_assessor ──┘
 
 from agents.sentiment import get_sentiment
 from agents.risk_assessor import assess_risk
+from agents.signal_generator import generate_signal
 
-def generate_signal():
+
+def run_pipeline() -> dict:
     sentiment = get_sentiment()
     risk = assess_risk()
-    
-    if sentiment == "bullish" and risk < 0.5:
-        return "BUY"
-    elif sentiment == "bearish" or risk > 0.7:
-        return "SELL"
-    else:
-        return "HOLD"
+    signal = generate_signal(sentiment=sentiment, risk=risk)
+    return signal
+
+
+if __name__ == "__main__":
+    result = run_pipeline()
+    print(f"Signal: {result['signal']}  (confidence {result['confidence']})")
+    print(f"Rationale: {result['rationale']}")

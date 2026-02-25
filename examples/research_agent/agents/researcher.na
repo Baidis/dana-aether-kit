@@ -1,0 +1,55 @@
+# agents/researcher.na
+# A general-purpose research agent that summarises a topic and saves
+# the result to a markdown file.
+#
+# Demonstrates:
+#   • chaining reason() calls for progressive refinement
+#   • writing output to disk
+#   • using type hints and structured returns
+
+
+def research_topic(topic: str, output_file: str = "research_output.md") -> dict:
+    """Research a topic and save a structured summary to *output_file*.
+
+    Args:
+        topic: The subject to research (e.g. "quantum computing", "LLM fine-tuning").
+        output_file: Destination markdown file path.
+
+    Returns:
+        dict with 'topic', 'summary', 'key_points', and 'output_file' keys.
+    """
+    # Step 1 — broad overview
+    overview = reason(
+        f"Give a concise overview of '{topic}' in 3–4 sentences "
+        f"suitable for a technical audience.",
+        context={"topic": topic},
+    )
+
+    # Step 2 — extract key points
+    key_points = reason(
+        "List the 5 most important facts or insights as bullet points.",
+        context={"topic": topic, "overview": overview},
+    )
+
+    # Step 3 — synthesise into a final summary
+    summary = reason(
+        "Write a polished, self-contained summary (≤200 words) "
+        "that a developer could share with their team.",
+        context={
+            "topic": topic,
+            "overview": overview,
+            "key_points": key_points,
+        },
+    )
+
+    # Step 4 — save to markdown
+    md = f"# Research: {topic}\n\n## Summary\n\n{summary}\n\n## Key Points\n\n{key_points}\n"
+    with open(output_file, "w") as f:
+        f.write(md)
+
+    return {
+        "topic": topic,
+        "summary": summary,
+        "key_points": key_points,
+        "output_file": output_file,
+    }

@@ -1,0 +1,44 @@
+from datetime import date
+
+
+def generate_signal(sentiment: str, risk) -> dict:
+    """Consume sentiment + risk outputs and produce a final BUY/SELL/HOLD signal.
+
+    Args:
+        sentiment: Output from agents.sentiment.get_sentiment() — 'bullish' | 'neutral' | 'bearish'
+        risk: Float 0.0–1.0 from agents.risk_assessor.assess_risk()
+
+    Returns:
+        dict with 'signal', 'rationale', and 'confidence' keys.
+    """
+    today = date.today().isoformat()
+
+    context = {
+        "date": today,
+        "sentiment": sentiment,
+        "risk_score": risk,
+    }
+
+    rationale = reason(
+        "Given the sentiment and risk score, explain in two sentences "
+        "why the market warrants a BUY, SELL, or HOLD decision.",
+        context=context,
+    )
+
+    signal = reason(
+        "Based on the rationale, return exactly one word: BUY, SELL, or HOLD.",
+        context={"rationale": rationale, **context},
+    )
+
+    confidence = reason(
+        "Rate your confidence in this signal as a float between 0.0 and 1.0.",
+        context={"signal": signal, "rationale": rationale},
+    )
+
+    return {
+        "date": today,
+        "signal": signal,
+        "rationale": rationale,
+        "confidence": confidence,
+        "inputs": context,
+    }
