@@ -1,0 +1,22 @@
+{
+  "coordinator": {
+    "description": "Orchestration only. Assigns outcome-focused tasks, never implementation steps.",
+    "cli": null
+  },
+  "researcher": {
+    "description": "Expert at gathering authoritative domain knowledge and primary sources.",
+    "cli": "gemini"
+  },
+  "analyst": {
+    "description": "Identifies patterns and actionable insights from research.",
+    "cli": "claude"
+  },
+  "critic": {
+    "description": "Reviews all outputs. Finds gaps, risks, and contradictions.",
+    "cli": "claude"
+  },
+  "integrator": {
+    "description": "Merges agent outputs into the final deliverable.",
+    "cli": "opencode"
+  }
+}
